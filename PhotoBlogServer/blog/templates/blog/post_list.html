@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8">
+    <title>Photo Blog</title>
+</head>
+<body>
+    <h1>Photo Blog</h1>
+    <p><a href="{% url 'post_new' %}">새 게시물 작성</a></p>
+    <ul>
+        {% for post in posts %}
+            <li>
+                <a href="{% url 'post_detail' pk=post.pk %}">{{ post.title }}</a>
+                — {{ post.author }} — {{ post.created_date }}
+            </li>
+        {% empty %}
+            <li>게시물이 없습니다.</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

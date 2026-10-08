@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-jnrc-&*71ymrdimsje#97h3je%^4p6a=xo7z-c!eruc_gz46b^
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', '10.0.2.2', '.pythonanywhere.com']
 
 
 # Application definition
@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'blog',
 ]
 
 MIDDLEWARE = [
@@ -116,6 +118,13 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = 'static/'
+
+# Media files (uploaded photo blog images)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+# 게시물 작성 화면(post_new/post_edit) 로그인에 Django admin 로그인 화면을 재사용
+LOGIN_URL = '/admin/login/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field

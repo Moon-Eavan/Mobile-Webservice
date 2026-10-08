@@ -3,24 +3,23 @@
 
 # Android
 *.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
+.gradle/
+.idea/
 local.properties
+**/build/
+captures/
+.externalNativeBuild/
+.cxx/
 
-# Python
+# Python / Django
 venv/
 .venv/
 __pycache__/
 *.pyc
 .env
+
+# Local Django database
+PhotoBlogServer/db.sqlite3
+
+# Uploaded test media
+PhotoBlogServer/media/

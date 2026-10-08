@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8">
+    <title>게시물 작성</title>
+</head>
+<body>
+    <p><a href="{% url 'post_list' %}">목록으로</a></p>
+    <h1>게시물 작성</h1>
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">저장</button>
+    </form>
+</body>
+</html>
