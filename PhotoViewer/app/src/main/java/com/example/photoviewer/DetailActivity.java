@@ -28,12 +28,14 @@ public class DetailActivity extends AppCompatActivity {
     public static final String EXTRA_TEXT = "extra_text";
     public static final String EXTRA_DATE = "extra_date";
     public static final String EXTRA_IMAGE_URL = "extra_image_url";
+    public static final String EXTRA_FAVORITE = "extra_favorite";
 
     ZoomableImageView detailImage;
     TextView noImageLabel;
     TextView titleView;
     TextView dateView;
     TextView textView;
+    TextView favoriteIconView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,15 +47,18 @@ public class DetailActivity extends AppCompatActivity {
         titleView = findViewById(R.id.detailTitle);
         dateView = findViewById(R.id.detailDate);
         textView = findViewById(R.id.detailText);
+        favoriteIconView = findViewById(R.id.detailFavoriteIcon);
 
         String title = getIntent().getStringExtra(EXTRA_TITLE);
         String text = getIntent().getStringExtra(EXTRA_TEXT);
         String date = getIntent().getStringExtra(EXTRA_DATE);
         String imageUrl = getIntent().getStringExtra(EXTRA_IMAGE_URL);
+        boolean favorite = getIntent().getBooleanExtra(EXTRA_FAVORITE, false);
 
         titleView.setText(title);
         dateView.setText(date);
         textView.setText(text);
+        favoriteIconView.setText(favorite ? "♥" : "♡");
 
         // org.json은 JSON null 값을 optString()으로 읽으면 문자열 "null"을 반환하므로
         // null/빈 문자열뿐 아니라 "null" 문자열도 "이미지 없음"으로 취급해야 한다.

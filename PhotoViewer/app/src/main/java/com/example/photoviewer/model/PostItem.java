@@ -17,6 +17,7 @@ public class PostItem {
     private final String publishedDate;
     private final String imageUrl;
     private Bitmap bitmap;
+    private boolean favorite;
 
     public PostItem(String author, String title, String text, String createdDate,
                      String publishedDate, String imageUrl) {
@@ -94,5 +95,29 @@ public class PostItem {
 
     private static boolean isValid(String value) {
         return value != null && !value.isEmpty() && !"null".equals(value);
+    }
+
+    /**
+     * 즐겨찾기 식별키. API에 id 필드가 없어 서버 ID를 임의로 만들지 않는 대신,
+     * title + "|" + created_date 조합을 사용한다.
+     * - created_date는 Django가 게시물 생성 시 1회(timezone.now())만 기록하는
+     *   마이크로초 단위 타임스탬프라 실제 데이터에서 두 게시물이 충돌할 가능성이 사실상 없다.
+     * - image는 없는 게시물이 있고(동일 값 null이 중복될 수 있어 단독 키로 부적합),
+     *   published_date는 post_edit에서 수정할 때마다 timezone.now()로 다시 갱신되어
+     *   즐겨찾기 키로 쓰면 글 수정 시 키가 바뀌어버리는 문제가 있다.
+     *   따라서 변경되지 않는 created_date를 기준으로 삼았다.
+     */
+    public String getPostKey() {
+        String safeTitle = title != null ? title : "";
+        String safeCreatedDate = isValid(createdDate) ? createdDate : "";
+        return safeTitle + "|" + safeCreatedDate;
+    }
+
+    public boolean isFavorite() {
+        return favorite;
+    }
+
+    public void setFavorite(boolean favorite) {
+        this.favorite = favorite;
     }
 }

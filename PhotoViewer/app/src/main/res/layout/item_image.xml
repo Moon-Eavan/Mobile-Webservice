@@ -24,6 +24,19 @@
             android:text="이미지 없음"
             android:textColor="#888888"
             android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/favoriteIcon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|end"
+            android:background="#55000000"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="8dp"
+            android:text="♡"
+            android:textColor="#FFFFFF"
+            android:textSize="28sp" />
     </FrameLayout>
 
     <TextView

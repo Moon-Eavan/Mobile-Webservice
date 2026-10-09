@@ -24,6 +24,8 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.photoviewer.database.AppDatabase;
+import com.example.photoviewer.database.FavoriteEntity;
 import com.example.photoviewer.model.PostItem;
 
 import org.json.JSONArray;
@@ -38,8 +40,10 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
@@ -52,10 +56,16 @@ public class MainActivity extends AppCompatActivity {
 
     FetchPostsTask taskDownload;
 
-    // 원본 목록(서버에서 받아온 전체)과 화면 표시 목록(검색/정렬 적용 결과)을 분리한다.
+    // 원본 목록(서버에서 받아온 전체)과 화면 표시 목록(검색/정렬/즐겨찾기 필터 적용 결과)을 분리한다.
     private final List<PostItem> allPosts = new ArrayList<>();
     private List<PostItem> displayedPosts = new ArrayList<>();
     private SortOrder currentSortOrder = SortOrder.NONE;
+    private boolean showFavoritesOnly = false;
+
+    private AppDatabase database;
+    // Room에서 읽어온 즐겨찾기 postKey 모음 (메모리 캐시). 동기화로 PostItem이 새로 만들어질 때마다
+    // 여기 들어있는 키와 비교해서 favorite 상태를 다시 적용한다.
+    private final Set<String> favoriteKeys = new HashSet<>();
 
     private final ActivityResultLauncher<Intent> uploadLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(), result -> {
@@ -78,11 +88,15 @@ public class MainActivity extends AppCompatActivity {
 
         textView = findViewById(R.id.textView);
         searchInput = findViewById(R.id.searchInput);
+        database = AppDatabase.getInstance(getApplicationContext());
 
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
-        adapter = new ImageAdapter(displayedPosts);
+        adapter = new ImageAdapter(displayedPosts, this::toggleFavorite);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
+
+        // 앱을 다시 실행했을 때도 즐겨찾기가 유지되도록 Room에서 즐겨찾기 키 목록을 먼저 불러온다.
+        new LoadFavoritesTask().execute();
 
         searchInput.addTextChangedListener(new TextWatcher() {
             @Override
@@ -109,6 +123,17 @@ public class MainActivity extends AppCompatActivity {
             currentSortOrder = SortOrder.OLDEST;
             applyFilterAndSort();
         });
+
+        Button btnFilterAll = findViewById(R.id.btnFilterAll);
+        Button btnFilterFavorites = findViewById(R.id.btnFilterFavorites);
+        btnFilterAll.setOnClickListener(v -> {
+            showFavoritesOnly = false;
+            applyFilterAndSort();
+        });
+        btnFilterFavorites.setOnClickListener(v -> {
+            showFavoritesOnly = true;
+            applyFilterAndSort();
+        });
     }
 
     /**
@@ -120,6 +145,9 @@ public class MainActivity extends AppCompatActivity {
 
         List<PostItem> filtered = new ArrayList<>();
         for (PostItem item : allPosts) {
+            if (showFavoritesOnly && !item.isFavorite()) {
+                continue;
+            }
             if (matchesQuery(item, query)) {
                 filtered.add(item);
             }
@@ -150,12 +178,88 @@ public class MainActivity extends AppCompatActivity {
         if (allPosts.isEmpty()) {
             textView.setText("불러올 게시물이 없습니다.");
         } else if (displayedPosts.isEmpty()) {
-            // 검색 결과가 0개인 경우 (allPosts는 있지만 검색어와 일치하는 것이 없음)
-            textView.setText("검색 결과가 없습니다.");
+            if (!query.isEmpty()) {
+                textView.setText("검색 결과가 없습니다.");
+            } else if (showFavoritesOnly) {
+                textView.setText("즐겨찾기한 게시물이 없습니다.");
+            } else {
+                textView.setText("표시할 게시물이 없습니다.");
+            }
         } else if (!query.isEmpty()) {
             textView.setText("검색 결과 " + displayedPosts.size() + "개");
+        } else if (showFavoritesOnly) {
+            textView.setText("즐겨찾기 " + displayedPosts.size() + "개");
         } else {
             textView.setText("게시물 " + displayedPosts.size() + "개를 불러왔습니다.");
+        }
+    }
+
+    /** allPosts의 각 PostItem에 Room에 저장된 즐겨찾기 상태를 다시 반영한다. */
+    private void applyFavoriteStatus() {
+        for (PostItem item : allPosts) {
+            item.setFavorite(favoriteKeys.contains(item.getPostKey()));
+        }
+    }
+
+    /**
+     * RecyclerView의 하트 아이콘을 눌렀을 때 호출된다.
+     * 메모리 상태(즉시 반영)와 Room DB(백그라운드 반영)를 함께 갱신한다.
+     */
+    private void toggleFavorite(PostItem postItem) {
+        boolean newFavorite = !postItem.isFavorite();
+        postItem.setFavorite(newFavorite);
+
+        String postKey = postItem.getPostKey();
+        if (newFavorite) {
+            favoriteKeys.add(postKey);
+        } else {
+            favoriteKeys.remove(postKey);
+        }
+
+        new ToggleFavoriteTask(postKey, postItem.getTitle(), postItem.getImageUrl(), newFavorite).execute();
+
+        // 즐겨찾기만 보기 필터가 켜져 있으면 해제 시 목록에서 바로 사라져야 하므로 다시 계산한다.
+        applyFilterAndSort();
+    }
+
+    private class LoadFavoritesTask extends AsyncTask<Void, Void, List<String>> {
+        @Override
+        protected List<String> doInBackground(Void... voids) {
+            return database.favoriteDao().getAllKeys();
+        }
+
+        @Override
+        protected void onPostExecute(List<String> keys) {
+            favoriteKeys.clear();
+            if (keys != null) {
+                favoriteKeys.addAll(keys);
+            }
+            applyFavoriteStatus();
+            applyFilterAndSort();
+        }
+    }
+
+    private class ToggleFavoriteTask extends AsyncTask<Void, Void, Void> {
+        private final String postKey;
+        private final String title;
+        private final String imageUrl;
+        private final boolean favorite;
+
+        ToggleFavoriteTask(String postKey, String title, String imageUrl, boolean favorite) {
+            this.postKey = postKey;
+            this.title = title;
+            this.imageUrl = imageUrl;
+            this.favorite = favorite;
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if (favorite) {
+                database.favoriteDao().insert(new FavoriteEntity(postKey, title, imageUrl));
+            } else {
+                database.favoriteDao().deleteByKey(postKey);
+            }
+            return null;
         }
     }
 
@@ -291,6 +395,8 @@ public class MainActivity extends AppCompatActivity {
                 if (result.postItems != null) {
                     allPosts.addAll(result.postItems);
                 }
+                // 새로 받아온 PostItem은 매번 새 객체이므로, 저장된 즐겨찾기 키와 비교해 다시 표시해야 한다.
+                applyFavoriteStatus();
                 applyFilterAndSort();
             } else {
                 textView.setText("불러오기 실패: " + result.errorMessage);

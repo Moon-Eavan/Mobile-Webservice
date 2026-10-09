@@ -16,12 +16,18 @@ import java.util.List;
 
 public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHolder> {
     private List<PostItem> postItemList;
+    private final OnFavoriteToggleListener favoriteToggleListener;
 
-    public ImageAdapter(List<PostItem> postItemList) { // 생성자에서 게시물 목록 입력
-        this.postItemList = postItemList;
+    public interface OnFavoriteToggleListener {
+        void onFavoriteToggle(PostItem postItem);
     }
 
-    /** 검색/정렬 결과로 화면에 표시할 목록을 교체한다. */
+    public ImageAdapter(List<PostItem> postItemList, OnFavoriteToggleListener favoriteToggleListener) {
+        this.postItemList = postItemList;
+        this.favoriteToggleListener = favoriteToggleListener;
+    }
+
+    /** 검색/정렬/필터 결과로 화면에 표시할 목록을 교체한다. */
     public void updateItems(List<PostItem> newItems) {
         this.postItemList = newItems;
         notifyDataSetChanged();
@@ -41,6 +47,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
 
         holder.titleView.setText(postItem.getTitle());
         holder.dateView.setText(postItem.getDisplayDate());
+        holder.favoriteIcon.setText(postItem.isFavorite() ? "♥" : "♡");
 
         if (postItem.getBitmap() != null) {
             holder.imageView.setImageBitmap(postItem.getBitmap());
@@ -53,6 +60,13 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
             holder.noImageLabel.setVisibility(View.VISIBLE);
         }
 
+        // 이미지 유무와 상관없이 즐겨찾기 아이콘은 항상 동작해야 한다 (이미지 없는 게시물도 즐겨찾기 가능).
+        holder.favoriteIcon.setOnClickListener(v -> {
+            if (favoriteToggleListener != null) {
+                favoriteToggleListener.onFavoriteToggle(postItem);
+            }
+        });
+
         holder.itemView.setOnClickListener(v -> {
             Context context = v.getContext();
             Intent intent = new Intent(context, DetailActivity.class);
@@ -61,6 +75,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
             intent.putExtra(DetailActivity.EXTRA_TEXT, postItem.getText());
             intent.putExtra(DetailActivity.EXTRA_DATE, postItem.getDisplayDate());
             intent.putExtra(DetailActivity.EXTRA_IMAGE_URL, postItem.getImageUrl());
+            intent.putExtra(DetailActivity.EXTRA_FAVORITE, postItem.isFavorite());
             context.startActivity(intent);
         });
     }
@@ -75,6 +90,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
         TextView noImageLabel;
         TextView titleView;
         TextView dateView;
+        TextView favoriteIcon;
 
         public ImageViewHolder(View itemView) {
             super(itemView);
@@ -82,6 +98,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
             noImageLabel = itemView.findViewById(R.id.noImageLabelItem);
             titleView = itemView.findViewById(R.id.itemTitle);
             dateView = itemView.findViewById(R.id.itemDate);
+            favoriteIcon = itemView.findViewById(R.id.favoriteIcon);
         }
     }
 }

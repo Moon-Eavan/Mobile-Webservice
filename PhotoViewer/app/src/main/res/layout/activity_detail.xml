@@ -30,13 +30,28 @@
                 android:visibility="gone" />
         </FrameLayout>
 
-        <TextView
-            android:id="@+id/detailTitle"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:textSize="20sp"
-            android:textStyle="bold" />
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/detailTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <!-- 목록에서 등록/해제한 즐겨찾기 상태를 그대로 보여주기만 한다 (읽기 전용). -->
+            <TextView
+                android:id="@+id/detailFavoriteIcon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#D81B60"
+                android:textSize="22sp" />
+        </LinearLayout>
 
         <TextView
             android:id="@+id/detailDate"
