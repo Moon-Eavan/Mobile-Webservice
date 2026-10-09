@@ -1,6 +1,5 @@
 package com.example.photoviewer;
 
-import android.graphics.Bitmap;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,13 +7,15 @@ import android.widget.ImageView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.photoviewer.model.PostItem;
+
 import java.util.List;
 
 public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHolder> {
-    private List<Bitmap> imageList;
+    private List<PostItem> postItemList;
 
-    public ImageAdapter(List<Bitmap> imageList) { // 생성자에서 이미지 목록 입력
-        this.imageList = imageList;
+    public ImageAdapter(List<PostItem> postItemList) { // 생성자에서 게시물 목록 입력
+        this.postItemList = postItemList;
     }
 
     @Override
@@ -27,14 +28,14 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
 
     @Override
     public void onBindViewHolder(ImageViewHolder holder, int position) {
-        // 해당 위치의 이미지를 뷰에 설정
-        Bitmap bitmap = imageList.get(position);
-        holder.imageView.setImageBitmap(bitmap);
+        // 해당 위치 게시물의 이미지를 뷰에 설정 (이번 Phase에서는 이미지만 표시)
+        PostItem postItem = postItemList.get(position);
+        holder.imageView.setImageBitmap(postItem.getBitmap());
     }
 
     @Override
     public int getItemCount() {
-        return imageList.size();
+        return postItemList.size();
     }
 
     public static class ImageViewHolder extends RecyclerView.ViewHolder {
