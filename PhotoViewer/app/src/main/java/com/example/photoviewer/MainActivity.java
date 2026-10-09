@@ -135,9 +135,12 @@ public class MainActivity extends AppCompatActivity {
                                 + ", image=" + imageUrl);
 
                         PostItem postItem = new PostItem(author, title, text, createdDate, publishedDate, imageUrl);
+                        // image URL이 없거나 다운로드/디코딩에 실패해도 Bitmap만 null로 두고
+                        // 게시물 자체는 목록에서 제외하지 않는다 (제목/본문/날짜/상세화면은 정상 표시되어야 함).
+                        postItemList.add(postItem);
 
                         // 게시물 1건의 이미지 다운로드가 실패해도 나머지 목록 처리는 계속한다.
-                        if (imageUrl != null && !imageUrl.isEmpty()) {
+                        if (postItem.hasImage()) {
                             HttpURLConnection imgConn = null;
                             try {
                                 URL myImageUrl = new URL(imageUrl);
@@ -151,7 +154,6 @@ public class MainActivity extends AppCompatActivity {
 
                                 if (imageBitmap != null) {
                                     postItem.setBitmap(imageBitmap);
-                                    postItemList.add(postItem); // 이미지가 있는 게시물만 목록에 추가 (기존 동작 유지)
                                 } else {
                                     Log.e(TAG, "이미지 디코딩 실패: " + imageUrl);
                                 }
@@ -190,9 +192,11 @@ public class MainActivity extends AppCompatActivity {
             if (result.success) {
                 List<PostItem> postItems = result.postItems;
                 if (postItems == null || postItems.isEmpty()) {
-                    textView.setText("불러올 이미지가 없습니다.");
+                    textView.setText("불러올 게시물이 없습니다.");
                 } else {
-                    textView.setText("이미지 로드 성공! (" + postItems.size() + "개)");
+                    // Phase 9부터는 이미지가 없는 게시물도 목록에 포함되므로
+                    // "이미지 개수"가 아니라 "게시물 개수"로 문구를 맞춘다.
+                    textView.setText("게시물 " + postItems.size() + "개를 불러왔습니다.");
                     RecyclerView recyclerView = findViewById(R.id.recyclerView);
                     ImageAdapter adapter = new ImageAdapter(postItems);
                     recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));

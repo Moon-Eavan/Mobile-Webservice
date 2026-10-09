@@ -52,11 +52,35 @@ public class PostItem {
         return imageUrl;
     }
 
+    /**
+     * image URL이 실제로 유효한지 확인한다.
+     * org.json은 JSON null 값을 optString()으로 읽으면 문자열 "null"을 반환하므로
+     * null/빈 문자열뿐 아니라 "null" 문자열도 "이미지 없음"으로 취급해야 한다.
+     */
+    public boolean hasImage() {
+        return isValid(imageUrl);
+    }
+
     public Bitmap getBitmap() {
         return bitmap;
     }
 
     public void setBitmap(Bitmap bitmap) {
         this.bitmap = bitmap;
+    }
+
+    /**
+     * 목록/상세 화면에 보여줄 날짜 하나를 고른다.
+     * published_date가 있으면 그것을, 없으면(null) created_date를 사용한다.
+     */
+    public String getDisplayDate() {
+        if (isValid(publishedDate)) {
+            return publishedDate;
+        }
+        return createdDate;
+    }
+
+    private static boolean isValid(String value) {
+        return value != null && !value.isEmpty() && !"null".equals(value);
     }
 }
