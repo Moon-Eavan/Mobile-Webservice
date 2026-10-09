@@ -99,18 +99,23 @@ public class PostItem {
 
     /**
      * 즐겨찾기 식별키. API에 id 필드가 없어 서버 ID를 임의로 만들지 않는 대신,
-     * title + "|" + created_date 조합을 사용한다.
-     * - created_date는 Django가 게시물 생성 시 1회(timezone.now())만 기록하는
-     *   마이크로초 단위 타임스탬프라 실제 데이터에서 두 게시물이 충돌할 가능성이 사실상 없다.
-     * - image는 없는 게시물이 있고(동일 값 null이 중복될 수 있어 단독 키로 부적합),
-     *   published_date는 post_edit에서 수정할 때마다 timezone.now()로 다시 갱신되어
-     *   즐겨찾기 키로 쓰면 글 수정 시 키가 바뀌어버리는 문제가 있다.
-     *   따라서 변경되지 않는 created_date를 기준으로 삼았다.
+     * created_date 단독을 사용한다.
+     *
+     * 다른 필드를 쓰지 않는 이유 (blog/views.py, blog/forms.py 코드로 확인함):
+     * - title: post_edit(PostForm)에서 사용자가 직접 수정 가능.
+     * - published_date: post_edit이 수정할 때마다 timezone.now()로 다시 갱신함.
+     * - author: post_edit이 항상 post.author = request.user로 재할당하므로,
+     *   다른 로그인 사용자가 같은 글을 수정하면 값이 바뀐다.
+     * - image: 이미지가 없는 게시물이 여러 건 있을 수 있어(image=null) 단독 키로 부적합.
+     *
+     * created_date만 유일하게 생성 이후 어떤 코드 경로로도 재할당되지 않는다
+     * (models.py: default=timezone.now — auto_now가 아니므로 생성 시 1회만 적용되고,
+     * PostForm.Meta.fields=('title','text','image')에도 포함되어 있지 않아
+     * post_new/post_edit 어디에서도 건드리지 않음). 실제 API 데이터(13개 게시물)로도
+     * 마이크로초 단위까지 전부 서로 다름을 확인했다.
      */
     public String getPostKey() {
-        String safeTitle = title != null ? title : "";
-        String safeCreatedDate = isValid(createdDate) ? createdDate : "";
-        return safeTitle + "|" + safeCreatedDate;
+        return isValid(createdDate) ? createdDate : "";
     }
 
     public boolean isFavorite() {
