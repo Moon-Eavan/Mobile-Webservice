@@ -80,6 +80,18 @@ public class PostItem {
         return createdDate;
     }
 
+    /**
+     * 정렬에 사용할 날짜 문자열.
+     * Django가 내려주는 날짜는 "2026-10-09T02:49:20.498404Z"처럼
+     * 고정 자릿수의 UTC ISO-8601 형식이라 날짜 파싱 없이 문자열 비교만으로도
+     * 시간 순서와 동일하게 정렬된다. null/빈 문자열/"null"/형식이 이상한 값은
+     * 모두 빈 문자열로 통일해 크래시 없이 안전하게 처리한다(정렬 시 맨 끝으로 몰림).
+     */
+    public String getSortableDate() {
+        String date = getDisplayDate();
+        return isValid(date) ? date : "";
+    }
+
     private static boolean isValid(String value) {
         return value != null && !value.isEmpty() && !"null".equals(value);
     }

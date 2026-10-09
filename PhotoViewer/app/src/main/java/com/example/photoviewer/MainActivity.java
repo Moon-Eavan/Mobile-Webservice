@@ -5,8 +5,12 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,14 +37,25 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
 
+    private enum SortOrder { NONE, NEWEST, OLDEST }
+
     TextView textView;
+    EditText searchInput;
+    ImageAdapter adapter;
 
     FetchPostsTask taskDownload;
+
+    // 원본 목록(서버에서 받아온 전체)과 화면 표시 목록(검색/정렬 적용 결과)을 분리한다.
+    private final List<PostItem> allPosts = new ArrayList<>();
+    private List<PostItem> displayedPosts = new ArrayList<>();
+    private SortOrder currentSortOrder = SortOrder.NONE;
 
     private final ActivityResultLauncher<Intent> uploadLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(), result -> {
@@ -62,6 +77,86 @@ public class MainActivity extends AppCompatActivity {
         });
 
         textView = findViewById(R.id.textView);
+        searchInput = findViewById(R.id.searchInput);
+
+        RecyclerView recyclerView = findViewById(R.id.recyclerView);
+        adapter = new ImageAdapter(displayedPosts);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setAdapter(adapter);
+
+        searchInput.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                applyFilterAndSort();
+            }
+        });
+
+        Button btnSortNewest = findViewById(R.id.btnSortNewest);
+        Button btnSortOldest = findViewById(R.id.btnSortOldest);
+        btnSortNewest.setOnClickListener(v -> {
+            currentSortOrder = SortOrder.NEWEST;
+            applyFilterAndSort();
+        });
+        btnSortOldest.setOnClickListener(v -> {
+            currentSortOrder = SortOrder.OLDEST;
+            applyFilterAndSort();
+        });
+    }
+
+    /**
+     * allPosts(원본 목록)에 현재 검색어/정렬 상태를 적용해 displayedPosts(표시 목록)를 다시 계산하고
+     * RecyclerView와 상태 TextView를 갱신한다. 서버를 다시 호출하지 않는다.
+     */
+    private void applyFilterAndSort() {
+        String query = searchInput.getText().toString().trim().toLowerCase(Locale.getDefault());
+
+        List<PostItem> filtered = new ArrayList<>();
+        for (PostItem item : allPosts) {
+            if (matchesQuery(item, query)) {
+                filtered.add(item);
+            }
+        }
+
+        if (currentSortOrder == SortOrder.NEWEST) {
+            Collections.sort(filtered, (a, b) -> b.getSortableDate().compareTo(a.getSortableDate()));
+        } else if (currentSortOrder == SortOrder.OLDEST) {
+            Collections.sort(filtered, (a, b) -> a.getSortableDate().compareTo(b.getSortableDate()));
+        }
+        // SortOrder.NONE이면 서버가 내려준 순서를 그대로 유지한다.
+
+        displayedPosts = filtered;
+        adapter.updateItems(displayedPosts);
+        updateStatusText(query);
+    }
+
+    private boolean matchesQuery(PostItem item, String query) {
+        if (query.isEmpty()) {
+            return true;
+        }
+        String title = item.getTitle() != null ? item.getTitle().toLowerCase(Locale.getDefault()) : "";
+        String text = item.getText() != null ? item.getText().toLowerCase(Locale.getDefault()) : "";
+        return title.contains(query) || text.contains(query);
+    }
+
+    private void updateStatusText(String query) {
+        if (allPosts.isEmpty()) {
+            textView.setText("불러올 게시물이 없습니다.");
+        } else if (displayedPosts.isEmpty()) {
+            // 검색 결과가 0개인 경우 (allPosts는 있지만 검색어와 일치하는 것이 없음)
+            textView.setText("검색 결과가 없습니다.");
+        } else if (!query.isEmpty()) {
+            textView.setText("검색 결과 " + displayedPosts.size() + "개");
+        } else {
+            textView.setText("게시물 " + displayedPosts.size() + "개를 불러왔습니다.");
+        }
     }
 
     public void onClickDownload(View v) {
@@ -190,18 +285,13 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(FetchResult result) {
             if (result.success) {
-                List<PostItem> postItems = result.postItems;
-                if (postItems == null || postItems.isEmpty()) {
-                    textView.setText("불러올 게시물이 없습니다.");
-                } else {
-                    // Phase 9부터는 이미지가 없는 게시물도 목록에 포함되므로
-                    // "이미지 개수"가 아니라 "게시물 개수"로 문구를 맞춘다.
-                    textView.setText("게시물 " + postItems.size() + "개를 불러왔습니다.");
-                    RecyclerView recyclerView = findViewById(R.id.recyclerView);
-                    ImageAdapter adapter = new ImageAdapter(postItems);
-                    recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
-                    recyclerView.setAdapter(adapter);
+                // 서버에서 새로 받은 결과로 원본 목록을 갱신하고,
+                // 현재 검색어/정렬 상태를 유지한 채로 다시 적용한다 (Upload 후 자동 재동기화 포함).
+                allPosts.clear();
+                if (result.postItems != null) {
+                    allPosts.addAll(result.postItems);
                 }
+                applyFilterAndSort();
             } else {
                 textView.setText("불러오기 실패: " + result.errorMessage);
             }

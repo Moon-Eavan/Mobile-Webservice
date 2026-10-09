@@ -21,6 +21,12 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
         this.postItemList = postItemList;
     }
 
+    /** 검색/정렬 결과로 화면에 표시할 목록을 교체한다. */
+    public void updateItems(List<PostItem> newItems) {
+        this.postItemList = newItems;
+        notifyDataSetChanged();
+    }
+
     @Override
     public ImageViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         // 게시물 항목을 나타낼 뷰 생성
