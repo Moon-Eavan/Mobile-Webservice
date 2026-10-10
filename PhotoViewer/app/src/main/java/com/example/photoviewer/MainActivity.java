@@ -26,6 +26,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.photoviewer.database.AppDatabase;
 import com.example.photoviewer.database.FavoriteEntity;
+import com.example.photoviewer.database.PostCacheEntity;
 import com.example.photoviewer.model.PostItem;
 
 import org.json.JSONArray;
@@ -61,6 +62,8 @@ public class MainActivity extends AppCompatActivity {
     private List<PostItem> displayedPosts = new ArrayList<>();
     private SortOrder currentSortOrder = SortOrder.NONE;
     private boolean showFavoritesOnly = false;
+    // 현재 화면이 서버 최신 데이터가 아니라 Room 오프라인 캐시를 보여주고 있는지 여부.
+    private boolean isOfflineMode = false;
 
     private AppDatabase database;
     // Room에서 읽어온 즐겨찾기 postKey 모음 (메모리 캐시). 동기화로 PostItem이 새로 만들어질 때마다
@@ -175,20 +178,27 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateStatusText(String query) {
+        // 오프라인 캐시로 표시 중이면, 어떤 검색/정렬/필터 조합이어도 그 사실을 계속 알 수 있게 한다.
+        String offlineSuffix = isOfflineMode ? " (오프라인 캐시)" : "";
+
         if (allPosts.isEmpty()) {
-            textView.setText("불러올 게시물이 없습니다.");
+            textView.setText(isOfflineMode
+                    ? "오프라인 캐시에도 저장된 게시물이 없습니다."
+                    : "불러올 게시물이 없습니다.");
         } else if (displayedPosts.isEmpty()) {
             if (!query.isEmpty()) {
-                textView.setText("검색 결과가 없습니다.");
+                textView.setText("검색 결과가 없습니다." + offlineSuffix);
             } else if (showFavoritesOnly) {
-                textView.setText("즐겨찾기한 게시물이 없습니다.");
+                textView.setText("즐겨찾기한 게시물이 없습니다." + offlineSuffix);
             } else {
-                textView.setText("표시할 게시물이 없습니다.");
+                textView.setText("표시할 게시물이 없습니다." + offlineSuffix);
             }
         } else if (!query.isEmpty()) {
-            textView.setText("검색 결과 " + displayedPosts.size() + "개");
+            textView.setText("검색 결과 " + displayedPosts.size() + "개" + offlineSuffix);
         } else if (showFavoritesOnly) {
-            textView.setText("즐겨찾기 " + displayedPosts.size() + "개");
+            textView.setText("즐겨찾기 " + displayedPosts.size() + "개" + offlineSuffix);
+        } else if (isOfflineMode) {
+            textView.setText("오프라인 캐시에서 게시물 " + displayedPosts.size() + "개를 불러왔습니다.");
         } else {
             textView.setText("게시물 " + displayedPosts.size() + "개를 불러왔습니다.");
         }
@@ -391,6 +401,7 @@ public class MainActivity extends AppCompatActivity {
             if (result.success) {
                 // 서버에서 새로 받은 결과로 원본 목록을 갱신하고,
                 // 현재 검색어/정렬 상태를 유지한 채로 다시 적용한다 (Upload 후 자동 재동기화 포함).
+                isOfflineMode = false;
                 allPosts.clear();
                 if (result.postItems != null) {
                     allPosts.addAll(result.postItems);
@@ -398,8 +409,61 @@ public class MainActivity extends AppCompatActivity {
                 // 새로 받아온 PostItem은 매번 새 객체이므로, 저장된 즐겨찾기 키와 비교해 다시 표시해야 한다.
                 applyFavoriteStatus();
                 applyFilterAndSort();
+
+                // 온라인 동기화 성공 시 Room 오프라인 캐시도 최신 데이터로 교체한다.
+                new SaveCacheTask(new ArrayList<>(allPosts)).execute();
             } else {
-                textView.setText("불러오기 실패: " + result.errorMessage);
+                // 네트워크/서버 오류 시 Room에 저장된 마지막 게시물 목록으로 대체를 시도한다.
+                new LoadCacheTask(result.errorMessage).execute();
+            }
+        }
+    }
+
+    private class SaveCacheTask extends AsyncTask<Void, Void, Void> {
+        private final List<PostItem> items;
+
+        SaveCacheTask(List<PostItem> items) {
+            this.items = items;
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            List<PostCacheEntity> entities = new ArrayList<>();
+            for (PostItem item : items) {
+                entities.add(new PostCacheEntity(item.getPostKey(), item.getAuthor(), item.getTitle(),
+                        item.getText(), item.getCreatedDate(), item.getPublishedDate(), item.getImageUrl()));
+            }
+            database.postCacheDao().replaceAll(entities);
+            return null;
+        }
+    }
+
+    private class LoadCacheTask extends AsyncTask<Void, Void, List<PostCacheEntity>> {
+        private final String errorMessage;
+
+        LoadCacheTask(String errorMessage) {
+            this.errorMessage = errorMessage;
+        }
+
+        @Override
+        protected List<PostCacheEntity> doInBackground(Void... voids) {
+            return database.postCacheDao().getAll();
+        }
+
+        @Override
+        protected void onPostExecute(List<PostCacheEntity> cached) {
+            if (cached != null && !cached.isEmpty()) {
+                isOfflineMode = true;
+                allPosts.clear();
+                for (PostCacheEntity entity : cached) {
+                    allPosts.add(new PostItem(entity.author, entity.title, entity.text,
+                            entity.createdDate, entity.publishedDate, entity.imageUrl));
+                }
+                applyFavoriteStatus();
+                applyFilterAndSort();
+            } else {
+                // 캐시도 없으면(최초 실행 등) 기존처럼 네트워크 오류 메시지만 표시한다.
+                textView.setText("불러오기 실패: " + errorMessage);
             }
         }
     }

@@ -8,9 +8,10 @@ import androidx.room.PrimaryKey;
  * 즐겨찾기 1건을 나타내는 Room Entity.
  *
  * 현재 Django API 응답(PostSerializer)에는 id 필드가 없으므로, 서버 ID를 임의로
- * 만들어 쓰지 않는다. 대신 postKey(title + "|" + created_date)를 식별키로 사용한다.
- * created_date는 Django가 게시물 생성 시 1회만 설정하는 마이크로초 단위 타임스탬프라
- * 사실상 충돌 가능성이 없고, post_edit로 글을 수정해도 바뀌지 않아 안정적이다.
+ * 만들어 쓰지 않는다. 대신 postKey(created_date 단독)를 식별키로 사용한다.
+ * title/author/published_date는 post_edit에서 바뀔 수 있지만, created_date는
+ * Django가 게시물 생성 시 1회만 설정하고 이후 어떤 코드 경로로도 재할당하지 않아
+ * 유일하게 안정적이다 (PostItem.getPostKey() 참고).
  */
 @Entity(tableName = "favorites")
 public class FavoriteEntity {
