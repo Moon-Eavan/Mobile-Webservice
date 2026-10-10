@@ -119,6 +119,12 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+# PythonAnywhere 등 WSGI 배포 환경에서는 runserver의 static 자동 서빙이 적용되지 않아
+# admin 페이지 CSS/JS가 깨져 보일 수 있다. `python manage.py collectstatic` 결과물을
+# 모아둘 디렉터리를 지정해, 배포 환경에서 Static files 매핑(/static/ -> 이 경로)으로
+# 서빙할 수 있게 한다. 로컬 runserver 동작에는 영향이 없다.
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
 # Media files (uploaded photo blog images)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
