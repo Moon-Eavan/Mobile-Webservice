@@ -126,9 +126,14 @@ public class PostSyncWorker extends Worker {
         Set<String> newKeys = new HashSet<>(currentKeys);
         newKeys.removeAll(knownKeys);
 
-        // 알림 표시 여부와 무관하게 이번에 확인한 전체 집합으로 갱신해야,
-        // 같은 게시물에 대해 다음 실행에서 또 "새 게시물"로 판단해 중복 알림을 띄우지 않는다.
-        saveKnownKeys(prefs, currentKeys);
+        // currentKeys로 "교체"하면 안 된다 (예: db.sqlite3를 이전 스냅샷으로 되돌리는 등의 이유로
+        // 특정 실행에서 일부 게시물이 응답에서 빠지면, knownKeys에서도 사라져 나중에 그 게시물이
+        // 다시 나타날 때 "새 게시물"로 재판정되어 중복 알림이 발생한다).
+        // 대신 기존 knownKeys ∪ 이번 currentKeys로 누적 저장해, 한 번 본 게시물은 응답에서
+        // 일시적으로 빠지더라도 "이미 아는 것"으로 계속 기억한다.
+        Set<String> updatedKnownKeys = new HashSet<>(knownKeys);
+        updatedKnownKeys.addAll(currentKeys);
+        saveKnownKeys(prefs, updatedKnownKeys);
 
         if (!newKeys.isEmpty()) {
             notifyNewPosts(context, newKeys, titleByKey);
