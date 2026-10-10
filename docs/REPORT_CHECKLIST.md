@@ -6,28 +6,54 @@
 
 각 Phase가 끝날 때 현재 찍을 수 있는 화면을 바로 저장하는 것을 권장한다.
 
+> 새 최종 결과보고서가 배포되어 평가 ID가 갱신되었다. 이 문서의 섹션 번호는
+> 새 결과보고서의 ID 1~14(14는 14-1~14-5 하위 번호)를 그대로 따른다.
+> ID 6(API 검증 엔진 자동테스트 · Code Coverage)은 `PhotoBlogServer/blog/tests.py`에
+> Python 자동 테스트 엔진 구현을 완료했다 (아래 ID 6 항목 참고).
+
 ---
 
-# 1. 제출 구조
+# ID 1. 폴더 구조
 
 ```text
 [ ] ROOT 폴더 구조 캡처
 [ ] PhotoBlogServer 폴더 확인
 [ ] PhotoViewer 폴더 확인
 [ ] 수행 결과 보고서 파일 확인
+```
+
+---
+
+# ID 2. GitHub Repository URL
+
+```text
 [ ] GitHub Repository URL
 ```
 
 ---
 
-# 2. 포토 블로그 / REST API
+# ID 3. 포토 블로그 API POST
 
 ```text
-[ ] 웹페이지 게시물 작성 화면
-[ ] 게시 완료된 웹페이지
+[ ] 작성 완료 웹페이지 작성 화면
+[ ] 게시 완료 페이지 화면 (주소창에 URL이 보이도록 캡처)
+```
+
+---
+
+# ID 4. 포토 블로그 API 검증 (2/3)
+
+```text
 [ ] /api_root/Post/ 정상 응답
-[ ] 터미널/API 요청 화면
-[ ] JSON Viewer 검증 화면
+[ ] 터미널 화면 (API 요청/응답)
+```
+
+---
+
+# ID 5. 포토 블로그 API 검증 (3/3)
+
+```text
+[ ] JSON Viewer(CodeBeautify) 검증 화면
 ```
 
 JSON Viewer에서는 가능한 한 다음 데이터가 보이게 한다.
@@ -41,19 +67,75 @@ image
 
 ---
 
-# 3. Server / Client 연동
+# ID 6. 포토 블로그 API 검증 엔진 자동테스트
+
+```text
+[x] Python API 검증 테스트 코드 및 엔진 구현
+[x] Code Coverage 리포트 확인
+[ ] Code Coverage HTML 리포트 화면 캡처
+```
+
+구현 내용:
+
+```text
+구현 파일: PhotoBlogServer/blog/tests.py (rest_framework.test.APITestCase)
+coverage 설정: PhotoBlogServer/.coveragerc
+테스트 데이터: setUpTestData로 생성한 전용 데이터 사용 (Django 테스트 DB,
+                실제 db.sqlite3/수동 데이터와 분리됨)
+테스트 항목: GET 200/JSON Array/필드 검증, POST 201/title·text·image 반영,
+            author read_only 무시 확인, 필수 필드 누락 400, 상세조회 200/404
+테스트 결과: Ran 13 tests ... OK
+```
+
+실행 명령:
+
+```text
+cd PhotoBlogServer
+venv/bin/coverage run manage.py test blog
+venv/bin/coverage html
+```
+
+캡처 대상: `PhotoBlogServer/htmlcov/index.html` 화면 (파일별 Coverage % 테이블이 보이도록).
+
+---
+
+# ID 7. Socket Server 요청 메시지
 
 ```text
 [ ] Socket Server가 받은 Client Request
-[ ] Server 브라우저 출력 화면
-[ ] Android Client 시작 화면
-[ ] 동기화 전 화면
-[ ] Client 동기화 완료 화면
+[ ] 수신 파일을 VSCode로 연 편집화면 캡처
 ```
 
 ---
 
-# 4. Upload
+# ID 8. Server 브라우저 출력화면
+
+```text
+[ ] localhost Server 브라우저 화면
+```
+
+---
+
+# ID 9. Client 시작 화면
+
+```text
+[ ] Android Client 시작 화면
+```
+
+---
+
+# ID 10. Client 동기화 완료 화면
+
+```text
+[ ] 동기화 전 화면
+[ ] Client 동기화 완료 화면 (localhost 서버 연동)
+```
+
+---
+
+# ID 11. Upload (MainActivity)
+
+> "Post에 따른 UI 제공 : 상" 방식으로 제출한다 (Hard coding 방식은 제출하지 않음).
 
 ```text
 [ ] Upload 입력 UI
@@ -67,11 +149,18 @@ image
 
 ---
 
-# 5. PythonAnywhere
+# ID 12. PythonAnywhere Server 브라우저 출력화면
 
 ```text
 [ ] PythonAnywhere Server 웹 화면
 [ ] Cloud /api_root/Post/ 확인
+```
+
+---
+
+# ID 13. PythonAnywhere Client 동기화 완료 화면
+
+```text
 [ ] Android Cloud Server 동기화
 [ ] Cloud 이미지 정상 표시
 ```
@@ -80,7 +169,7 @@ image
 
 ---
 
-# 6. 추가 기능 1 - 상세 화면 + 이미지 확대
+# ID 14-1. 추가 기능 1 - 상세 화면 + 이미지 확대
 
 ```text
 [ ] 목록 화면
@@ -99,7 +188,7 @@ RecyclerView의 게시물을 선택하면 제목, 본문, 날짜, 이미지를
 
 ---
 
-# 7. 추가 기능 2 - 검색 + 정렬
+# ID 14-2. 추가 기능 2 - 검색 + 정렬
 
 ```text
 [ ] 전체 목록
@@ -111,7 +200,7 @@ RecyclerView의 게시물을 선택하면 제목, 본문, 날짜, 이미지를
 
 ---
 
-# 8. 추가 기능 3 - 즐겨찾기
+# ID 14-3. 추가 기능 3 - 즐겨찾기
 
 ```text
 [ ] 즐겨찾기 전
@@ -123,7 +212,7 @@ RecyclerView의 게시물을 선택하면 제목, 본문, 날짜, 이미지를
 
 ---
 
-# 9. 추가 기능 4 - 오프라인 캐시
+# ID 14-4. 추가 기능 4 - 오프라인 캐시
 
 ```text
 [ ] 온라인 정상 동기화
@@ -134,7 +223,7 @@ RecyclerView의 게시물을 선택하면 제목, 본문, 날짜, 이미지를
 
 ---
 
-# 10. 추가 기능 5 - WorkManager + Notification
+# ID 14-5. 추가 기능 5 - WorkManager + Notification
 
 ```text
 [ ] 자동 동기화 테스트 실행
@@ -146,7 +235,9 @@ RecyclerView의 게시물을 선택하면 제목, 본문, 날짜, 이미지를
 
 ---
 
-# 11. 최종 기능 검사
+# 최종 기능 검사
+
+(아래는 특정 ID에 대응하는 항목이 아니라, 제출 전 전체 기능을 한 번 더 확인하기 위한 보조 체크리스트다.)
 
 ```text
 [ ] Django 웹 정상
@@ -171,7 +262,7 @@ RecyclerView의 게시물을 선택하면 제목, 본문, 날짜, 이미지를
 
 ---
 
-# 12. 캡처 파일 관리 권장
+# 캡처 파일 관리 권장
 
 Repository에 캡처 원본을 보관하고 싶다면 별도 폴더를 사용할 수 있다.
 
@@ -191,7 +282,7 @@ evidence/
 
 ---
 
-# 13. 최종 제출 전
+# 최종 제출 전
 
 ```text
 [ ] 보고서의 모든 이미지가 문서 안에 포함되어 있음

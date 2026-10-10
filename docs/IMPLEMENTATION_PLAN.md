@@ -7,6 +7,9 @@
 **한 번에 전체 Phase를 구현하지 않는다.**
 각 Phase를 완료하고 테스트한 뒤 다음 단계로 이동한다.
 
+> 새 최종 결과보고서가 배포되어 평가 ID가 갱신되었다. 아래 Phase 번호 자체는 그대로 두고,
+> 각 Phase의 "보고서 증빙/캡처" 항목에만 새 ID(docs/REPORT_CHECKLIST.md 기준)를 표시해 두었다.
+
 ---
 
 # Phase 0. 프로젝트 준비 및 분석
@@ -89,10 +92,12 @@ POST /api_root/Post/
 
 ## 보고서 증빙
 
-- 웹 게시물 작성
-- 게시 완료
-- API 응답
-- JSON Viewer
+> 새 최종 결과보고서 ID: 웹 게시물 작성/게시 완료 = ID 3, API 응답 = ID 4, JSON Viewer = ID 5
+
+- 웹 게시물 작성 (ID 3)
+- 게시 완료 (ID 3)
+- API 응답 (ID 4)
+- JSON Viewer (ID 5)
 
 ## 완료 조건
 
@@ -179,8 +184,8 @@ item_image.xml
 
 ## 보고서 캡처
 
-- Client 시작 화면
-- Client 동기화 완료 화면
+- Client 시작 화면 (새 최종 결과보고서 ID 9)
+- Client 동기화 완료 화면 (ID 10)
 
 ---
 
@@ -203,11 +208,13 @@ Connection 등
 
 ## 보고서 캡처
 
-Socket Server가 받은 요청 메시지.
+Socket Server가 받은 요청 메시지. (새 최종 결과보고서 ID 7 — 수신 파일을 VSCode로 연 화면으로 캡처)
 
 ---
 
 # Phase 7. Upload UI + Multipart POST
+
+> 새 최종 결과보고서 ID 11 (MainActivity Upload 구현) — "Post에 따른 UI 제공 : 상" 방식 유지
 
 ## 목표
 
@@ -289,7 +296,7 @@ RecyclerView가 `PostItem` 목록을 기반으로 동작하면서 기존 기능�
 
 ---
 
-# Phase 9. 추가 기능 1
+# Phase 9. 추가 기능 1 (새 최종 결과보고서 ID 14-1)
 
 `docs/ANDROID_FEATURES.md`의:
 
@@ -301,7 +308,7 @@ RecyclerView가 `PostItem` 목록을 기반으로 동작하면서 기존 기능�
 
 ---
 
-# Phase 10. 추가 기능 2
+# Phase 10. 추가 기능 2 (새 최종 결과보고서 ID 14-2)
 
 `docs/ANDROID_FEATURES.md`의:
 
@@ -313,7 +320,7 @@ RecyclerView가 `PostItem` 목록을 기반으로 동작하면서 기존 기능�
 
 ---
 
-# Phase 11. 추가 기능 3
+# Phase 11. 추가 기능 3 (새 최종 결과보고서 ID 14-3)
 
 `docs/ANDROID_FEATURES.md`의:
 
@@ -325,7 +332,7 @@ Room 즐겨찾기
 
 ---
 
-# Phase 12. 추가 기능 4
+# Phase 12. 추가 기능 4 (새 최종 결과보고서 ID 14-4)
 
 `docs/ANDROID_FEATURES.md`의:
 
@@ -337,7 +344,7 @@ Room 오프라인 캐시
 
 ---
 
-# Phase 13. 추가 기능 5
+# Phase 13. 추가 기능 5 (새 최종 결과보고서 ID 14-5)
 
 `docs/ANDROID_FEATURES.md`의:
 
@@ -376,8 +383,8 @@ Django Server를 PythonAnywhere에서 동작시키고 Android Client를 클라�
 
 ## 보고서 캡처
 
-- PythonAnywhere Server
-- Android Cloud 동기화
+- PythonAnywhere Server (새 최종 결과보고서 ID 12)
+- Android Cloud 동기화 (ID 13)
 
 ---
 
