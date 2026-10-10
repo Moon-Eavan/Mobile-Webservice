@@ -1,9 +1,11 @@
 package com.example.photoviewer;
 
+import android.Manifest;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -18,16 +20,24 @@ import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.work.Constraints;
+import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.NetworkType;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
 
 import com.example.photoviewer.database.AppDatabase;
 import com.example.photoviewer.database.FavoriteEntity;
 import com.example.photoviewer.database.PostCacheEntity;
 import com.example.photoviewer.model.PostItem;
+import com.example.photoviewer.worker.PostSyncWorker;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -45,11 +55,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
 
     private enum SortOrder { NONE, NEWEST, OLDEST }
+
+    // PeriodicWorkRequest를 등록할 때 사용하는 고유 작업 이름 (enqueueUniquePeriodicWork용).
+    private static final String SYNC_WORK_NAME = "post_sync_work";
 
     TextView textView;
     EditText searchInput;
@@ -77,6 +91,11 @@ public class MainActivity extends AppCompatActivity {
                     startSync();
                 }
             });
+
+    // 거부되어도 앱은 그대로 동작한다. PostSyncWorker가 알림을 띄우기 직전에 권한을 다시 확인해서
+    // 권한이 없으면 알림만 생략하고 동기화(baseline/중복 방지 갱신)는 계속 정상 수행한다.
+    private final ActivityResultLauncher<String> notificationPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), granted -> { });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -137,6 +156,46 @@ public class MainActivity extends AppCompatActivity {
             showFavoritesOnly = true;
             applyFilterAndSort();
         });
+
+        requestNotificationPermissionIfNeeded();
+        schedulePeriodicSync();
+    }
+
+    /** Android 13(API 33)+에서는 Notification을 띄우려면 런타임 권한이 필요하다. */
+    private void requestNotificationPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                && ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                        != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+        }
+    }
+
+    /**
+     * 앱이 실행 중이 아니어도 주기적으로 새 게시물을 확인하도록 PostSyncWorker를 등록한다.
+     * PeriodicWorkRequest는 시스템이 허용하는 최소 반복 주기(15분)보다 짧게 설정할 수 없으므로
+     * 그보다 짧은 주기를 억지로 쓰지 않고 최소값인 15분을 그대로 사용한다.
+     * ExistingPeriodicWorkPolicy.KEEP을 사용해, 이미 등록되어 있으면 앱을 다시 켤 때마다
+     * 스케줄이 리셋되지 않고 기존 주기가 유지되게 한다.
+     */
+    private void schedulePeriodicSync() {
+        Constraints constraints = new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build();
+
+        PeriodicWorkRequest request = new PeriodicWorkRequest.Builder(
+                PostSyncWorker.class, 15, TimeUnit.MINUTES)
+                .setConstraints(constraints)
+                .build();
+
+        WorkManager.getInstance(getApplicationContext())
+                .enqueueUniquePeriodicWork(SYNC_WORK_NAME, ExistingPeriodicWorkPolicy.KEEP, request);
+    }
+
+    /** 개발/보고서 검증용: PeriodicWorkRequest의 15분 주기를 기다리지 않고 PostSyncWorker를 즉시 1회 실행한다. */
+    public void onClickTestBackgroundSync(View v) {
+        OneTimeWorkRequest request = new OneTimeWorkRequest.Builder(PostSyncWorker.class).build();
+        WorkManager.getInstance(getApplicationContext()).enqueue(request);
+        Toast.makeText(getApplicationContext(), "백그라운드 동기화를 즉시 실행했습니다.", Toast.LENGTH_LONG).show();
     }
 
     /**

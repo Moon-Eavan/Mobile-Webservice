@@ -92,6 +92,19 @@
             android:text="즐겨찾기" />
     </LinearLayout>
 
+    <!-- 개발/보고서 검증용: PeriodicWorkRequest(15분 주기)를 기다리지 않고
+         PostSyncWorker를 즉시 1회 실행해 새 게시물 Notification 동작을 바로 확인할 수 있다.
+         실제 자동 동기화 자체는 onCreate()에서 등록하는 PeriodicWorkRequest가 담당한다. -->
+    <Button
+        android:id="@+id/btnTestBackgroundSync"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="8dp"
+        android:onClick="onClickTestBackgroundSync"
+        android:text="백그라운드 동기화 테스트 (즉시 실행)" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
