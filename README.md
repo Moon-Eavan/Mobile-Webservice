@@ -1,4 +1,3 @@
-```markdown
 # Mobile-Webservice Photo Blog
 
 Django REST Framework 기반의 Photo Blog Server와 Android PhotoViewer Client를 연동한 모바일 웹서비스 프로젝트입니다.
