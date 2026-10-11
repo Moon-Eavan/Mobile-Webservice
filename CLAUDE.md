@@ -8,6 +8,21 @@
 - `PhotoViewer/`: Android Client
 - `docs/`: 과제 요구사항, 구현 계획, 기능 설계, 보고서 체크리스트
 
+## 현재 상태 (2026-10-11 기준)
+
+기본 과제 기능 + 추가 기능 5개(ID 14-1~14-5) 구현과 PythonAnywhere 클라우드 배포까지 완료된 상태이며,
+현재는 새 기능 개발 단계가 아니라 **최종 보고서 작성 및 제출 정리 단계**다.
+
+- Cloud Server URL: `https://hoynola.pythonanywhere.com`
+- Android `PhotoViewer/app/src/main/java/com/example/photoviewer/ApiConfig.java`의
+  `BASE_URL`이 현재 위 Cloud 주소를 가리키고 있다 (로컬 테스트로 되돌리려면 이 상수 한 줄만
+  `http://10.0.2.2:8000`으로 바꾸면 된다. MainActivity/UploadActivity/PostSyncWorker가 모두
+  이 상수 하나만 참조하므로 다른 파일을 수정할 필요는 없다).
+- Phase별 상세 구현 이력과 현재 완료 상태는 `docs/IMPLEMENTATION_PLAN.md`,
+  남은 보고서/캡처 작업은 `docs/REPORT_CHECKLIST.md`를 참고한다.
+- 이 단계 이후 작업은 주로 보고서 캡처 확인, 문서 정리, 회귀 테스트 수준이며,
+  요청받지 않은 새 기능을 임의로 추가하지 않는다.
+
 ## 작업 전에 필요한 문서만 읽기
 
 작업 목적에 따라 아래 문서만 읽는다.

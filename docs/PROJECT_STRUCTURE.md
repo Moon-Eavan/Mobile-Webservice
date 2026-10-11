@@ -10,8 +10,11 @@
 
 # 1. Repository Root
 
+> 아래는 2026-10-11 기준 실제 repository 구조다 (venv/, __pycache__/, build/, .idea/ 등
+> gitignore 대상과 미디어/빌드 산출물은 생략).
+
 ```text
-MobileWebService/
+Mobile-Webservice/
 ├── CLAUDE.md
 ├── .gitignore
 │
@@ -23,14 +26,19 @@ MobileWebService/
 │   ├── REPORT_CHECKLIST.md
 │   └── ch05.md
 │
+├── tools/
+│   ├── socket_server.py            # Phase 6: Socket Server 요청 검증용
+│   └── captured_requests/
+│       └── request_20261008_173639.txt
+│
 ├── PhotoBlogServer/
-├── PhotoViewer/
-└── 모바일/웹서비스 프로젝트 공통평가 01_수행 결과 보고서.docx
+└── PhotoViewer/
 ```
 
 `CLAUDE.md`는 Repository Root에 둔다.
 
-상세 문서는 모두 `docs/`에 둔다.
+상세 문서는 모두 `docs/`에 둔다. 수행 결과 보고서(.docx)는 제출 시 별도로 준비하며
+Repository 구조 자체에는 포함하지 않았다.
 
 ---
 
@@ -42,31 +50,50 @@ MobileWebService/
 MobileWebService/PhotoBlogServer/
 ```
 
-새 Django 프로젝트를 만드는 경우 예:
+실제 구조 (이 프로젝트는 강의자료 예시 이름 `mysite`/`blog`를 실제로도 그대로 사용한다):
 
 ```text
 PhotoBlogServer/
 ├── manage.py
-├── requirements.txt
-├── mysite/                 # 예시. 실제 이름 우선
-│   ├── settings.py
+├── requirements.txt         # coverage 포함
+├── .coveragerc              # ID 6 Code Coverage 측정 범위(blog 앱만) 설정
+│
+├── mysite/
+│   ├── settings.py           # STATIC_ROOT 등 PythonAnywhere 배포용 설정 포함
 │   ├── urls.py
 │   ├── wsgi.py
-│   └── ...
+│   └── asgi.py
 │
 └── blog/
     ├── models.py
     ├── serializers.py
     ├── views.py
     ├── urls.py
-    └── ...
+    ├── admin.py
+    ├── forms.py
+    ├── tests.py              # ID 6: APITestCase 기반 자동 테스트 13개
+    ├── migrations/
+    └── templates/blog/
 ```
 
 ## 중요
 
-`mysite`, `blog`는 강의자료 예시 이름이다.
+`mysite`, `blog`는 강의자료 예시 이름이지만, 이 프로젝트의 실제 Django project/app 이름이기도
+하다. 즉 예시 이름을 그대로 실사용 이름으로 채택한 경우이며, 이름이 우연히 같다고 해서 코드를
+확인하지 않고 예시처럼 가정해서는 안 된다 — 실제로는 매번 코드(`settings.py`의 `INSTALLED_APPS`
+등)로 확인했다.
 
-실제 프로젝트 이름이 다르면 강제로 변경하지 않는다.
+## gitignore 대상 (소스 구조와 구분)
+
+다음은 Repository에는 없고 로컬/배포 환경에만 생성되는 파일이다.
+
+```text
+PhotoBlogServer/db.sqlite3        # 로컬 DB (클라우드는 별도로 migrate+createsuperuser 필요)
+PhotoBlogServer/media/            # 업로드된 이미지
+PhotoBlogServer/.coverage         # coverage 실행 결과
+PhotoBlogServer/htmlcov/          # coverage html 리포트 (ID 6 캡처 대상)
+PhotoBlogServer/staticfiles/      # collectstatic 결과물 (PythonAnywhere 배포용)
+```
 
 ---
 
@@ -164,18 +191,18 @@ ImageView
 
 # 5. Java 권장 구조
 
-실제 package name을 먼저 확인한다.
+실제 package name을 먼저 확인한다. 실제 package: `com.example.photoviewer`.
 
-예:
+실제 구조 (2026-10-11 기준):
 
 ```text
-PhotoViewer/app/src/main/java/<현재패키지>/
+PhotoViewer/app/src/main/java/com/example/photoviewer/
 ├── MainActivity.java
 ├── UploadActivity.java
 ├── DetailActivity.java
-│
-├── adapter/
-│   └── ImageAdapter.java
+├── ApiConfig.java            # 서버 주소(BASE_URL) 단일 관리
+├── ImageAdapter.java         # RecyclerView Adapter (기존 구조 유지, adapter/ 하위로 옮기지 않음)
+├── ZoomableImageView.java    # 기능 1: 이미지 Pinch Zoom
 │
 ├── model/
 │   └── PostItem.java
@@ -191,9 +218,8 @@ PhotoViewer/app/src/main/java/<현재패키지>/
     └── PostSyncWorker.java
 ```
 
-기존 프로젝트에 `ImageAdapter.java`가 MainActivity와 같은 package에 있다면 기본 기능이 성공하기 전에는 굳이 이동하지 않는다.
-
-구조 정리는 Phase 8 이후 필요할 때 진행한다.
+`ImageAdapter.java`는 MainActivity와 같은 package에 그대로 두었다 (기존에 정상 동작하던 구조를
+이유 없이 바꾸지 않는다는 원칙에 따라 `adapter/` 하위로 옮기지 않음).
 
 ---
 
@@ -257,17 +283,10 @@ java/<현재패키지>/worker/PostSyncWorker.java
 
 Server URL을 여러 Activity/Worker에 문자열로 반복해서 작성하지 않는다.
 
-가능하면 한 곳에서 관리한다.
+한 곳에서 관리한다: `PhotoViewer/app/src/main/java/com/example/photoviewer/ApiConfig.java`의
+`BASE_URL` 상수 하나만 MainActivity/UploadActivity/PostSyncWorker가 공통으로 참조한다.
 
-예:
-
-```text
-ApiConfig.java
-```
-
-또는 기존 프로젝트의 적절한 상수 구조 사용.
-
-환경 예:
+환경:
 
 ```text
 Local Emulator:
@@ -276,9 +295,11 @@ http://10.0.2.2:8000
 Local Browser:
 http://127.0.0.1:8000
 
-Cloud:
-https://<실제계정>.pythonanywhere.com
+Cloud (현재 설정값):
+https://hoynola.pythonanywhere.com
 ```
+
+상세 내용은 `docs/ANDROID_FEATURES.md`의 "ApiConfig / 서버 주소 관리" 절 참고.
 
 ---
 
@@ -334,7 +355,10 @@ db.sqlite3
 media/
 ```
 
-는 수업 제출 방식에 따라 필요할 수 있으므로 임의로 제외하지 않는다.
+는 수업 제출 방식에 따라 필요할 수 있으므로 임의로 제외하지 않는다. 이 프로젝트에서는 실제로
+두 항목 모두 `.gitignore`에 포함되어 있다 (업로드 이미지/로컬 DB를 Repository에 올리지 않는
+방식을 선택함). 따라서 PythonAnywhere 등 새 환경에서는 `migrate` + `createsuperuser`를 별도로
+수행해야 하며, 로컬에서 만든 테스트 데이터를 클라우드로 옮길 필요는 없다.
 
 ---
 

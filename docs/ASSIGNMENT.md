@@ -179,6 +179,15 @@ Multipart POST
 Android 재동기화 후 확인
 ```
 
+ID 11 (Upload) 구현 내용:
+
+```text
+구현 파일: UploadActivity.java, activity_upload.xml
+UI 방식: Android Photo Picker(ActivityResultContracts.PickVisualMedia) + HttpURLConnection 수동 Multipart POST
+동작: 업로드 성공 시 MainActivity로 복귀하면서 자동 재동기화(startSync())되어 바로 목록에 반영됨
+서버 주소: ApiConfig.BASE_URL 하나만 참조 (문자열 중복 하드코딩 없음)
+```
+
 ---
 
 ## 8. PythonAnywhere
@@ -186,7 +195,7 @@ Android 재동기화 후 확인
 > 새 최종 결과보고서 기준: ID 12(PythonAnywhere Server 브라우저 출력화면),
 > ID 13(PythonAnywhere Client 동기화 완료 화면)
 
-Django Server를 PythonAnywhere에서 동작시킨다.
+Django Server를 PythonAnywhere에서 동작시킨다. (배포 완료: `https://hoynola.pythonanywhere.com`)
 
 확인 항목:
 
@@ -194,6 +203,17 @@ Django Server를 PythonAnywhere에서 동작시킨다.
 1. PythonAnywhere에서 Server 웹페이지 정상 출력   (ID 12)
 2. 클라우드 API 정상 응답                          (ID 12 보조 확인)
 3. Android Client에서 클라우드 Server 동기화        (ID 13)
+```
+
+ID 12/13 구현 내용:
+
+```text
+Cloud URL: https://hoynola.pythonanywhere.com
+배포 방식: GitHub 연동(기존 repository) + PythonAnywhere Manual configuration 웹앱
+Android 연동: ApiConfig.java의 BASE_URL 한 줄만 Cloud 주소로 변경
+            (MainActivity/UploadActivity/PostSyncWorker 모두 동일 상수 참조)
+확인됨: MainActivity 동기화, 게시물 목록/이미지 표시, DetailActivity, Upload(cloud POST 실제 반영),
+       PostSyncWorker가 동일 ApiConfig 기준으로 정상 동작(Notification 포함)
 ```
 
 ---
