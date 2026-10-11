@@ -213,7 +213,7 @@ TOTAL: 100%
 0 missing
 ```
 
-Coverage 측정 범위는 Django `blog` 앱이며, 테스트를 위해 Production 코드를 수정하거나 Coverage 측정 범위를 축소하지 않았습니다.
+Coverage 측정 범위는 Django `blog` 앱입니다.
 
 HTML Coverage Report는 다음 명령으로 생성됩니다.
 
@@ -363,4 +363,3 @@ staticfiles/
 ```
 
 Django Server와 Android Client는 하나의 Repository에서 함께 관리합니다.
-```
