@@ -80,10 +80,8 @@ public class UploadActivity extends AppCompatActivity {
             Toast.makeText(this, "제목과 내용을 입력해주세요.", Toast.LENGTH_SHORT).show();
             return;
         }
-        if (selectedImageUri == null) {
-            Toast.makeText(this, "이미지를 선택해주세요.", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        // 이미지는 선택 입력이다 (서버 Post.image가 blank=True). 선택하지 않으면 selectedImageUri가 null로 전달되고,
+        // UploadTask가 multipart 요청에서 image 파트만 생략한다. 제목/내용은 서버 필수 필드라 위에서 계속 검사한다.
         if (uploadTask != null && uploadTask.getStatus() == AsyncTask.Status.RUNNING) {
             return;
         }
@@ -121,7 +119,8 @@ public class UploadActivity extends AppCompatActivity {
             HttpURLConnection conn = null;
 
             try {
-                byte[] imageBytes = readImageBytes(imageUri);
+                // 이미지를 선택하지 않은 경우 imageBytes는 null이고 image 파트를 보내지 않는다.
+                byte[] imageBytes = imageUri != null ? readImageBytes(imageUri) : null;
                 String fileName = "upload_" + System.currentTimeMillis() + ".jpg";
 
                 URL url = new URL(ApiConfig.BASE_URL + "/api_root/Post/");
@@ -136,7 +135,9 @@ public class UploadActivity extends AppCompatActivity {
                     // author는 서버(BlogImages.perform_create)가 결정하므로 보내지 않는다.
                     writeFormField(os, boundary, "title", title);
                     writeFormField(os, boundary, "text", text);
-                    writeFileField(os, boundary, "image", fileName, imageBytes);
+                    if (imageBytes != null) {
+                        writeFileField(os, boundary, "image", fileName, imageBytes);
+                    }
                     os.write(("--" + boundary + "--\r\n").getBytes());
                 }
 
