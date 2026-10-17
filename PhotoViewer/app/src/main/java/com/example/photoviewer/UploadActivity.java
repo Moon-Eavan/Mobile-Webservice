@@ -69,6 +69,7 @@ public class UploadActivity extends AppCompatActivity {
 
         btnUpload.setOnClickListener(v -> startUpload());
         btnCancel.setOnClickListener(v -> finish());
+        findViewById(R.id.btnBack).setOnClickListener(v -> finish());
     }
 
     private void startUpload() {

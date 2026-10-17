@@ -46,6 +46,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
         PostItem postItem = postItemList.get(position);
 
         holder.titleView.setText(postItem.getTitle());
+        holder.textView.setText(postItem.getText());
         holder.dateView.setText(postItem.getDisplayDate());
         holder.favoriteIcon.setText(postItem.isFavorite() ? "♥" : "♡");
 
@@ -89,6 +90,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
         ImageView imageView;
         TextView noImageLabel;
         TextView titleView;
+        TextView textView;
         TextView dateView;
         TextView favoriteIcon;
 
@@ -97,6 +99,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
             imageView = itemView.findViewById(R.id.imageViewItem);
             noImageLabel = itemView.findViewById(R.id.noImageLabelItem);
             titleView = itemView.findViewById(R.id.itemTitle);
+            textView = itemView.findViewById(R.id.itemText);
             dateView = itemView.findViewById(R.id.itemDate);
             favoriteIcon = itemView.findViewById(R.id.favoriteIcon);
         }

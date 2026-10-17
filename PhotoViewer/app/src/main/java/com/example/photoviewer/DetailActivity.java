@@ -48,6 +48,7 @@ public class DetailActivity extends AppCompatActivity {
         dateView = findViewById(R.id.detailDate);
         textView = findViewById(R.id.detailText);
         favoriteIconView = findViewById(R.id.detailFavoriteIcon);
+        findViewById(R.id.btnBack).setOnClickListener(v -> finish());
 
         String title = getIntent().getStringExtra(EXTRA_TITLE);
         String text = getIntent().getStringExtra(EXTRA_TEXT);

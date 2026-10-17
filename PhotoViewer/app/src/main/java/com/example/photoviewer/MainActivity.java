@@ -66,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String SYNC_WORK_NAME = "post_sync_work";
 
     TextView textView;
+    View offlineBanner;
     EditText searchInput;
     ImageAdapter adapter;
 
@@ -109,6 +110,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         textView = findViewById(R.id.textView);
+        offlineBanner = findViewById(R.id.offlineBanner);
         searchInput = findViewById(R.id.searchInput);
         database = AppDatabase.getInstance(getApplicationContext());
 
@@ -237,6 +239,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateStatusText(String query) {
+        // UI 표시 전용: 오프라인 캐시 사용 여부(isOfflineMode)에 따라 경고 배너만 보이거나 숨긴다.
+        offlineBanner.setVisibility(isOfflineMode ? View.VISIBLE : View.GONE);
+
         // 오프라인 캐시로 표시 중이면, 어떤 검색/정렬/필터 조합이어도 그 사실을 계속 알 수 있게 한다.
         String offlineSuffix = isOfflineMode ? " (오프라인 캐시)" : "";
 
