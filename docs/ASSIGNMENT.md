@@ -221,8 +221,9 @@ Android 연동: ApiConfig.java의 BASE_URL 한 줄만 Cloud 주소로 변경
 ## 9. 추가 Client 편의 기능
 
 > 새 최종 결과보고서 기준: ID 14(기타 기획되지 않은 Client 편의 기능, 최대 5개), 하위 관리 번호:
-> ID 14-1 상세 화면 + 이미지 확대, ID 14-2 검색 + 정렬, ID 14-3 Room 즐겨찾기,
-> ID 14-4 Room 오프라인 캐시, ID 14-5 WorkManager 자동 동기화 + Notification
+> ID 14-1 검색, ID 14-2 정렬, ID 14-3 즐겨찾기(Room),
+> ID 14-4 오프라인 캐시(Room), ID 14-5 백그라운드 동기화 및 알림(WorkManager + Notification)
+> (게시물 상세 화면 + 이미지 확대는 구현되어 있으나 단순 기능이므로 추가 기능에 포함하지 않음)
 
 강의자료/보고서에서 강의 중 제공되지 않은 Client 편의 기능을 **최대 5개** 추가할 수 있다.
 

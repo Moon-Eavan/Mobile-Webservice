@@ -8,90 +8,19 @@
 
 ---
 
-# 기능 1. 게시물 상세 화면 + 이미지 확대
+# 기능 1. 게시물 검색 (ID 14-1)
 
 난이도: 중
 
 ## 목적
 
-RecyclerView에서 게시물 이미지만 보는 대신 게시물 전체 내용을 상세 화면에서 확인한다.
-
-## 권장 파일
-
-```text
-java/<현재패키지>/DetailActivity.java
-res/layout/activity_detail.xml
-```
-
-## 표시 정보
-
-```text
-큰 이미지
-제목
-본문
-작성 또는 게시 날짜
-```
-
-## 동작
-
-```text
-RecyclerView 게시물 선택
-→ DetailActivity 이동
-→ 해당 게시물 정보 표시
-→ 이미지 확대 가능
-```
-
-가능하면 Pinch Zoom 또는 전체 화면 이미지 보기를 구현한다.
-
-Bitmap 자체를 큰 Intent Extra로 직접 전달하는 것은 피한다.
-
-가능하면:
-
-```text
-title
-text
-date
-imageUrl
-```
-
-을 전달하거나 저장된 데이터를 사용한다.
-
-## 증빙
-
-```text
-목록 화면
-상세 화면
-이미지 확대 화면
-```
-
-## 현재 상태: 완료
-
-실제 구현 파일: `DetailActivity.java`, `res/layout/activity_detail.xml`, `ZoomableImageView.java`.
-Bitmap을 Intent extra로 직접 전달하지 않고 title/text/date/imageUrl 문자열만 넘긴 뒤
-DetailActivity에서 이미지를 다시 다운로드한다. Pinch Zoom은 `ZoomableImageView`가 처리.
-
----
-
-# 기능 2. 게시물 검색 + 정렬
-
-난이도: 중
-
-## 목적
-
-게시물이 많아졌을 때 제목/본문으로 검색하고 날짜순으로 정렬할 수 있게 한다.
+게시물이 많아졌을 때 제목/본문 키워드로 원하는 게시물을 빠르게 찾을 수 있게 한다.
 
 ## 검색 대상
 
 ```text
 title
 text
-```
-
-## 정렬
-
-```text
-최신순
-오래된순
 ```
 
 ## 구현 원칙
@@ -114,20 +43,53 @@ displayedPosts
 ```text
 전체 목록
 검색 결과
+```
+
+## 현재 상태: 완료
+
+실제 구현 위치: `MainActivity.java`. `allPosts`(서버 원본)와 `displayedPosts`(검색/정렬/즐겨찾기
+필터 적용 결과)를 분리하고, `applyFilterAndSort()`에서 서버 재호출 없이 제목/본문 검색을
+적용한다. 검색어를 지우면 `applyFilterAndSort()`가 다시 호출되어 전체 목록으로 복원된다.
+
+---
+
+# 기능 2. 게시물 정렬 (ID 14-2)
+
+난이도: 하~중
+
+## 목적
+
+게시물을 날짜 기준으로 최신순/오래된순으로 정렬하여 볼 수 있게 한다.
+
+## 정렬
+
+```text
+최신순
+오래된순
+```
+
+정렬 기준은 `published_date`(없으면 `created_date`)이다.
+
+## 구현 원칙
+
+검색과 마찬가지로 서버를 다시 호출하지 않고 `displayedPosts`에만 정렬을 적용한다.
+검색어/즐겨찾기 필터와 동시에 적용되어야 한다.
+
+## 증빙
+
+```text
 최신순
 오래된순
 ```
 
 ## 현재 상태: 완료
 
-실제 구현 위치: `MainActivity.java`. `allPosts`(서버 원본)와 `displayedPosts`(검색/정렬/즐겨찾기
-필터 적용 결과)를 분리하고, `applyFilterAndSort()`에서 서버 재호출 없이 제목/본문 검색과
-최신순/오래된순 정렬을 적용한다. 검색어를 지우면 `applyFilterAndSort()`가 다시 호출되어
-전체 목록으로 복원된다.
+실제 구현 위치: `MainActivity.java`의 `applyFilterAndSort()`. 검색(ID 14-1)·즐겨찾기 필터(ID 14-3)
+적용 후 같은 메서드 안에서 최신순/오래된순 정렬을 적용하므로 세 기능이 동시에 동작한다.
 
 ---
 
-# 기능 3. Room DB 즐겨찾기
+# 기능 3. Room DB 즐겨찾기 (ID 14-3)
 
 난이도: 중상
 
@@ -204,7 +166,7 @@ Room에서 즐겨찾기 키를 불러와 복원하므로 앱을 종료했다 다
 
 ---
 
-# 기능 4. Room 기반 오프라인 캐시
+# 기능 4. Room 기반 오프라인 캐시 (ID 14-4)
 
 난이도: 상
 
@@ -273,7 +235,7 @@ GET 성공 시 Room에 최신 목록을 저장(`replaceAll`)하고, GET 실패 �
 
 ---
 
-# 기능 5. WorkManager 자동 동기화 + Notification
+# 기능 5. WorkManager 백그라운드 동기화 + 알림 (ID 14-5)
 
 난이도: 상
 
@@ -371,6 +333,71 @@ FLAG_ACTIVITY_CLEAR_TOP`). Cloud 전환(Phase 14) 이후에도 `ApiConfig.BASE_U
 
 ---
 
+# 참고: 게시물 상세 화면 + 이미지 확대 (추가 기능 개수 미포함)
+
+> 구현은 되어 있지만 단순한 UI 보조 기능이므로 ID 14 추가 기능 5개에 포함하지 않는다.
+> 보고서의 추가 기능 항목에도 별도로 명시하지 않는다.
+
+## 목적
+
+RecyclerView에서 게시물 이미지만 보는 대신 게시물 전체 내용을 상세 화면에서 확인한다.
+
+## 권장 파일
+
+```text
+java/<현재패키지>/DetailActivity.java
+res/layout/activity_detail.xml
+```
+
+## 표시 정보
+
+```text
+큰 이미지
+제목
+본문
+작성 또는 게시 날짜
+```
+
+## 동작
+
+```text
+RecyclerView 게시물 선택
+→ DetailActivity 이동
+→ 해당 게시물 정보 표시
+→ 이미지 확대 가능
+```
+
+가능하면 Pinch Zoom 또는 전체 화면 이미지 보기를 구현한다.
+
+Bitmap 자체를 큰 Intent Extra로 직접 전달하는 것은 피한다.
+
+가능하면:
+
+```text
+title
+text
+date
+imageUrl
+```
+
+을 전달하거나 저장된 데이터를 사용한다.
+
+## 증빙
+
+```text
+목록 화면
+상세 화면
+이미지 확대 화면
+```
+
+## 현재 상태: 완료
+
+실제 구현 파일: `DetailActivity.java`, `res/layout/activity_detail.xml`, `ZoomableImageView.java`.
+Bitmap을 Intent extra로 직접 전달하지 않고 title/text/date/imageUrl 문자열만 넘긴 뒤
+DetailActivity에서 이미지를 다시 다운로드한다. Pinch Zoom은 `ZoomableImageView`가 처리.
+
+---
+
 # ApiConfig / 서버 주소 관리
 
 Server 주소는 `PhotoViewer/app/src/main/java/com/example/photoviewer/ApiConfig.java`
@@ -399,9 +426,12 @@ BASE_URL = "https://hoynola.pythonanywhere.com"
 # 최종 추가 기능 목록
 
 ```text
-1. 게시물 상세 화면 및 이미지 확대       — 완료 (ID 14-1)
-2. 게시물 검색 및 정렬                  — 완료 (ID 14-2)
+1. 게시물 검색                          — 완료 (ID 14-1)
+2. 게시물 정렬                          — 완료 (ID 14-2)
 3. Room 기반 즐겨찾기                   — 완료 (ID 14-3)
 4. Room 기반 오프라인 캐시              — 완료 (ID 14-4)
-5. WorkManager 자동 동기화 및 새 게시물 Notification — 완료 (ID 14-5)
+5. WorkManager 백그라운드 동기화 및 새 게시물 알림 — 완료 (ID 14-5)
 ```
+
+게시물 상세 화면 + 이미지 확대(`DetailActivity`, `ZoomableImageView`)는 구현되어 있으나
+추가 기능 5개에는 포함하지 않는다.

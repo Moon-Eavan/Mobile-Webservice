@@ -319,20 +319,20 @@ Android Client는 로그인 기능이 없으므로 `author`를 직접 보내지 
 
 | ID | 기능 | 핵심 구현 |
 | --- | --- | --- |
-| 14-1 | 게시물 상세보기 & 이미지 확대 | `DetailActivity`, `ZoomableImageView` |
-| 14-2 | 검색 & 정렬 | 제목/본문 실시간 검색 + 최신순/오래된순, 동시 적용 |
+| 14-1 | 검색 | 제목/본문 실시간 검색, 서버 재호출 없이 로컬 목록 필터링 |
+| 14-2 | 정렬 | `published_date`(없으면 `created_date`) 기준 최신순/오래된순, 검색·즐겨찾기 필터와 동시 적용 |
 | 14-3 | 즐겨찾기 | Room `favorites` 테이블, 즐겨찾기만 보기 필터, 앱 재실행 후에도 유지 |
 | 14-4 | 오프라인 캐시 | Room `post_cache` 테이블, 서버 실패 시 캐시 로드 + 오프라인 배너 |
 | 14-5 | 백그라운드 동기화 & 알림 | WorkManager `PeriodicWorkRequest`(15분, `NetworkType.CONNECTED`) + Notification |
 
-### 1. Post Detail & Image Zoom
+### 1. Search
 
-게시물을 누르면 `DetailActivity`에서 제목, 본문, 작성 날짜, 이미지를 확인할 수 있습니다.
-이미지는 Pinch Zoom으로 확대/축소할 수 있습니다.
+제목과 본문을 기준으로 실시간 검색합니다.
+서버를 다시 호출하지 않고 이미 받아온 목록에서 필터링하며, 검색어를 지우면 전체 목록으로 복원됩니다.
 
-### 2. Search & Sort
+### 2. Sort
 
-제목과 본문을 기준으로 실시간 검색하며, 최신순/오래된순 정렬과 함께 사용할 수 있습니다.
+최신순/오래된순으로 정렬할 수 있으며, 검색 및 즐겨찾기 필터와 함께 사용할 수 있습니다.
 정렬 기준은 `published_date`(없으면 `created_date`)입니다.
 
 ### 3. Favorites

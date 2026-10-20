@@ -330,15 +330,12 @@ favorite 상태를 보관. API에 없는 `id`를 임의로 만들지 않고, `cr
 
 ---
 
-# Phase 9. 추가 기능 1 (새 최종 결과보고서 ID 14-1)
+# Phase 9. 게시물 상세 화면 + 이미지 확대 (보조 UI, 추가 기능 개수 미포함)
 
-`docs/ANDROID_FEATURES.md`의:
+`docs/ANDROID_FEATURES.md`의 "참고: 게시물 상세 화면 + 이미지 확대" 구현.
 
-```text
-게시물 상세 화면 + 이미지 확대
-```
-
-구현.
+> 처음에는 추가 기능 1(ID 14-1)로 계획했으나, 단순한 UI 보조 기능이라 최종 보고서의 추가 기능
+> 5개에서는 제외했다. 코드는 그대로 유지한다. 대신 검색/정렬을 ID 14-1/14-2로 분리했다 (Phase 10).
 
 **상태: 완료.** `DetailActivity.java` + `activity_detail.xml` + `ZoomableImageView.java`로 구현.
 Bitmap을 Intent로 직접 전달하지 않고 title/text/date/imageUrl 문자열만 전달한 뒤 상세 화면에서
@@ -346,18 +343,20 @@ Bitmap을 Intent로 직접 전달하지 않고 title/text/date/imageUrl 문자�
 
 ---
 
-# Phase 10. 추가 기능 2 (새 최종 결과보고서 ID 14-2)
+# Phase 10. 추가 기능 1·2 (새 최종 결과보고서 ID 14-1 검색, ID 14-2 정렬)
 
 `docs/ANDROID_FEATURES.md`의:
 
 ```text
-게시물 검색 + 정렬
+기능 1. 게시물 검색 (ID 14-1)
+기능 2. 게시물 정렬 (ID 14-2)
 ```
 
 구현.
 
 **상태: 완료.** `MainActivity`에 `allPosts`(원본)/`displayedPosts`(표시용) 분리 구조와
-`applyFilterAndSort()`를 추가해 서버 재호출 없이 제목/본문 검색 + 최신순/오래된순 정렬을 처리.
+`applyFilterAndSort()`를 추가해 서버 재호출 없이 제목/본문 검색(ID 14-1)과 최신순/오래된순
+정렬(ID 14-2)을 처리. 두 기능은 같은 메서드에서 처리되지만 보고서에서는 별도 기능으로 기술한다.
 
 ---
 
@@ -399,7 +398,7 @@ Room 오프라인 캐시
 `docs/ANDROID_FEATURES.md`의:
 
 ```text
-WorkManager 자동 동기화 + Notification
+WorkManager 백그라운드 동기화 + 알림
 ```
 
 구현.
@@ -464,7 +463,7 @@ media 이미지 URL까지 직접 확인함. Django 서버 코드/Room schema는 
 [x] Android 동기화
 [x] Upload
 [x] 상세 보기
-[x] 이미지 확대
+[x] 이미지 확대 (보조 UI, 추가 기능 미포함)
 [x] 검색
 [x] 정렬
 [x] 즐겨찾기

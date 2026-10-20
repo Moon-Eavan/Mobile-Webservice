@@ -182,28 +182,45 @@ Cloud 서버의 게시물(이미지 포함)이 RecyclerView에 표시된 화면�
 
 ---
 
-# ID 14-1. 추가 기능 1 - 상세 화면 + 이미지 확대
+> **추가 기능 구성 변경 (2026-10-20)**: 기존 ID 14-1(상세 화면 + 이미지 확대)은 단순 기능이라
+> 추가 기능에서 제외하고, 기존 ID 14-2(검색 + 정렬)를 ID 14-1 검색 / ID 14-2 정렬로 분리했다.
+> ID 14-3~14-5는 이름만 정리했고 내용은 동일하다. 기존 캡처 파일명은 아래처럼 바꿔서 사용한다.
+>
+> - `14-2-1_search.png` → `14-1_search.png`
+> - `14-2-2_sort.png` → `14-2_sort.png`
+> - `14-1-1_post_detail.png`, `14-1-2_image_zoom.png` → ID 14에는 더 이상 사용하지 않음
+
+# ID 14-1. 추가 기능 1 - 검색
 
 ```text
-[x] 기능 구현 완료 (DetailActivity.java, activity_detail.xml, ZoomableImageView.java)
-[x] 보고서 증빙 촬영 완료 (사용자 확인: 14-1-1_post_detail.png, 14-1-2_image_zoom.png)
+[x] 기능 구현 완료 (MainActivity: allPosts/displayedPosts 분리, applyFilterAndSort()의 제목/본문 검색)
+[x] 보고서 증빙 촬영 완료 (사용자 확인: 기존 14-2-1_search.png → 14-1_search.png)
+[ ] (권장) 검색 전 전체 목록 캡처 추가 — 검색 전/후 비교용
 ```
 
 보고서 설명 예시:
 
 ```text
-RecyclerView의 게시물을 선택하면 제목, 본문, 날짜, 이미지를
-확인할 수 있는 상세 화면으로 이동하도록 구현하였다.
-이미지는 확대하여 확인할 수 있다.
+상단 검색창에 입력한 키워드로 게시물의 제목과 본문을 실시간 검색하도록 구현하였다.
+서버를 다시 호출하지 않고 이미 받아온 목록에서 필터링하며,
+검색어를 지우면 전체 목록으로 복원된다.
 ```
 
 ---
 
-# ID 14-2. 추가 기능 2 - 검색 + 정렬
+# ID 14-2. 추가 기능 2 - 정렬
 
 ```text
-[x] 기능 구현 완료 (MainActivity: allPosts/displayedPosts 분리, applyFilterAndSort())
-[x] 보고서 증빙 촬영 완료 (사용자 확인: 14-2-1_search.png, 14-2-2_sort.png)
+[x] 기능 구현 완료 (MainActivity: applyFilterAndSort()의 최신순/오래된순 정렬)
+[x] 보고서 증빙 촬영 완료 (사용자 확인: 기존 14-2-2_sort.png → 14-2_sort.png)
+[ ] (권장) 최신순/오래된순 두 화면을 모두 캡처 — 정렬 결과 비교용
+```
+
+보고서 설명 예시:
+
+```text
+게시물을 날짜(published_date, 없으면 created_date) 기준으로 최신순/오래된순 정렬할 수 있도록
+구현하였다. 검색 및 즐겨찾기 필터와 동시에 적용된다.
 ```
 
 ---
@@ -228,7 +245,7 @@ RecyclerView의 게시물을 선택하면 제목, 본문, 날짜, 이미지를
 
 ---
 
-# ID 14-5. 추가 기능 5 - WorkManager + Notification
+# ID 14-5. 추가 기능 5 - 백그라운드 동기화 및 알림
 
 ```text
 [x] 기능 구현 완료 (worker/PostSyncWorker.java, PeriodicWorkRequest 15분 주기, 합집합 방식
@@ -250,8 +267,8 @@ RecyclerView의 게시물을 선택하면 제목, 본문, 날짜, 이미지를
 [x] Android 동기화
 [x] RecyclerView
 [x] Upload
-[x] 상세 화면
-[x] 이미지 확대
+[x] 상세 화면 (보조 UI, 추가 기능 미포함)
+[x] 이미지 확대 (보조 UI, 추가 기능 미포함)
 [x] 검색
 [x] 정렬
 [x] 즐겨찾기

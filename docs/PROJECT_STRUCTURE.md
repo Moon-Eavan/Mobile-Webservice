@@ -202,7 +202,7 @@ PhotoViewer/app/src/main/java/com/example/photoviewer/
 ├── DetailActivity.java
 ├── ApiConfig.java            # 서버 주소(BASE_URL) 단일 관리
 ├── ImageAdapter.java         # RecyclerView Adapter (기존 구조 유지, adapter/ 하위로 옮기지 않음)
-├── ZoomableImageView.java    # 기능 1: 이미지 Pinch Zoom
+├── ZoomableImageView.java    # 상세 화면 이미지 Pinch Zoom (보조 UI, 추가 기능 미포함)
 │
 ├── model/
 │   └── PostItem.java
